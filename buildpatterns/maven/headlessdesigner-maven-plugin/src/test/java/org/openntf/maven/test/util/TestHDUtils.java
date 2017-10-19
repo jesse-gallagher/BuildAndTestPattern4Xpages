@@ -14,7 +14,7 @@ public class TestHDUtils {
 		String result = HDUtils.fileUri(filePath, "workspace", "applications");
 		
 		File file = new File(filePath);
-		File concat = new File(filePath, "workspace/applications");
+		File concat = new File(file, "workspace/applications");
 		String expected = concat.toURI().toString();
 		
 		assertEquals("file URI should match expected", expected, result);
