@@ -24,6 +24,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.StringUtils;
+import org.openntf.maven.util.HDUtils;
 
 @Mojo(name = "ddehd")
 @Execute(goal = "ddehd")
@@ -237,7 +238,7 @@ public class HeadlessDesignerBuilder extends AbstractDesignerPlugin {
 					sb.append("com.ibm.designer.domino.tools.userlessbuild.jobs.UpdateManagerJob,-command install -from ");
 					sb.append(site.getUrl());
 					sb.append(" -to ");
-					sb.append(fileUri(m_NotesData, "workspace", "applications"));
+					sb.append(HDUtils.fileUri(m_NotesData, "workspace", "applications"));
 					sb.append(" -featureId ");
 					sb.append(site.getFeatureId());
 					sb.append(" -version ");
@@ -277,7 +278,7 @@ public class HeadlessDesignerBuilder extends AbstractDesignerPlugin {
 				for (Feature site : m_Features) {
 					StringBuilder sb = new StringBuilder();
 					sb.append("com.ibm.designer.domino.tools.userlessbuild.jobs.UpdateManagerJob,-command enable -to ");
-					sb.append(fileUri(m_NotesData, "workspace", "applications"));
+					sb.append(HDUtils.fileUri(m_NotesData, "workspace", "applications"));
 					sb.append(" -featureId ");
 					sb.append(site.getFeatureId());
 					sb.append(" -version ");
@@ -329,7 +330,7 @@ public class HeadlessDesignerBuilder extends AbstractDesignerPlugin {
 				for (Feature site : m_Features) {
 					StringBuilder sb = new StringBuilder();
 					sb.append("com.ibm.designer.domino.tools.userlessbuild.jobs.UpdateManagerJob,-command disable -to ");
-					sb.append(fileUri(m_NotesData, "workspace", "applications"));
+					sb.append(HDUtils.fileUri(m_NotesData, "workspace", "applications"));
 					sb.append(" -featureId ");
 					sb.append(site.getFeatureId());
 					sb.append(" -version ");
@@ -362,7 +363,7 @@ public class HeadlessDesignerBuilder extends AbstractDesignerPlugin {
 				for (Feature site : m_Features) {
 					StringBuilder sb = new StringBuilder();
 					sb.append("com.ibm.designer.domino.tools.userlessbuild.jobs.UpdateManagerJob,-command uninstall -to ");
-					sb.append(fileUri(m_NotesData, "workspace", "applications"));
+					sb.append(HDUtils.fileUri(m_NotesData, "workspace", "applications"));
 					sb.append(" -featureId ");
 					sb.append(site.getFeatureId());
 					sb.append(" -version ");
@@ -435,35 +436,5 @@ public class HeadlessDesignerBuilder extends AbstractDesignerPlugin {
 	 */
 	public void setTemplateBuildVersion(String templateBuildVersion) {
 		this.templateBuildVersion = templateBuildVersion;
-	}
-	
-	// *******************************************************************************
-	// * Internal utility methods
-	// *******************************************************************************
-	/**
-	 * Constructs a file:// URI from the provided system file path and subfolders.
-	 * 
-	 * @param filePath the base file path in system format
-	 * @param subfolders any subfolders to append
-	 * @return a file:// URI for the provided path
-	 */
-	private static String fileUri(String filePath, String... subfolders) {
-		StringBuilder sub = new StringBuilder();
-		if(subfolders != null) {
-			for(String subfolder : subfolders) {
-				if(sub.length() > 0) {
-					sub.append('/');
-				}
-				sub.append(subfolder);
-			}
-		}
-		File baseFile = new File(filePath);
-		if(sub.length() > 0) {
-			File result = new File(baseFile, subfolders.toString());
-			return result.toURI().toString();
-		} else {
-			return baseFile.toURI().toString();
-		}
-		
 	}
 }
