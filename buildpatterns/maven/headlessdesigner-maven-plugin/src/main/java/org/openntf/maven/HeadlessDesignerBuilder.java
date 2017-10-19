@@ -2,6 +2,7 @@ package org.openntf.maven;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,7 +25,15 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.StringUtils;
+import org.openntf.maven.design.ACL;
+import org.openntf.maven.design.ACLEntry;
 import org.openntf.maven.util.HDUtils;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+import com.ibm.commons.util.StringUtil;
+import com.ibm.commons.util.io.StreamUtil;
+import com.ibm.commons.xml.DOMUtil;
 
 @Mojo(name = "ddehd")
 @Execute(goal = "ddehd")
@@ -78,6 +87,9 @@ public class HeadlessDesignerBuilder extends AbstractDesignerPlugin {
 	
 	@Parameter(defaultValue="${project}", readonly=true, required=true)
 	private MavenProject project;
+	
+	@Parameter
+	private ACL acl;
 
 	/**
 	 * Path to File with the build instructions for the headless designer. If
@@ -116,8 +128,12 @@ public class HeadlessDesignerBuilder extends AbstractDesignerPlugin {
 			
 			// Create/overwrite the $TemplateBuild field if needed
 			if(StringUtils.isNotEmpty(templateBuildName)) {
-				getLog().debug("Want to build $TemplateBuild for name=" + templateBuildName + ", version=" + templateBuildVersion);
+				getLog().info("Configuring template build name " + templateBuildName + ", version= " + templateBuildVersion);
 				configureTemplateBuild(tempOdp);
+			}
+			if(acl != null) {
+				getLog().info("Configuring ACL");
+				configureAcl(tempOdp);
 			}
 			
 			installFeature();
@@ -231,6 +247,115 @@ public class HeadlessDesignerBuilder extends AbstractDesignerPlugin {
 			throw new MojoExecutionException("Failed to read templateBuild.xml", e);
 		} finally {
 			IOUtils.closeQuietly(templateXmlStream);
+		}
+	}
+	
+	private void configureAcl(File odpPath) throws MojoExecutionException {
+		File databaseProperties = new File(odpPath, "AppProperties" + File.separator + "database.properties");
+		if(!databaseProperties.exists()) {
+			throw new MojoExecutionException("Could not locate database properties file: " + databaseProperties.getAbsolutePath());
+		}
+		
+		try {
+			FileInputStream fis = new FileInputStream(databaseProperties);
+			String xmlString;
+			try {
+				xmlString = StreamUtil.readString(fis);
+			} finally {
+				StreamUtil.close(fis);
+			}
+			getLog().debug("Read XML of length " + xmlString.length() + " from database.properties file " + databaseProperties.getAbsolutePath());
+			
+			Document xml = DOMUtil.createDocument(xmlString);
+			Element aclNode = (Element)DOMUtil.evaluateXPath(xml, "/database/acl").getSingleNode();
+			if(aclNode == null) {
+				// Then add a new one under the document element
+				aclNode = xml.createElement("acl");
+				xml.getDocumentElement().appendChild(aclNode);
+			}
+			// Clear out existing children in favor of our new ACL
+			DOMUtil.removeChildren(aclNode);
+			
+			aclNode.setAttribute("adminserver", StringUtil.toString(acl.getAdminServer()));
+			aclNode.setAttribute("consistentacl", String.valueOf(acl.isConsistentAcl()));
+			aclNode.setAttribute("maxinternetaccess", StringUtil.toString(acl.getMaxInternetAccess()));
+			List<String> roles = acl.getRoles();
+			if(roles != null) {
+				for(String role : roles) {
+					String name = HDUtils.getBracketedName(role);
+					if(StringUtil.isNotEmpty(name)) {
+						Element roleElement = xml.createElement("role");
+						roleElement.setTextContent(name);
+						aclNode.appendChild(roleElement);
+					}
+				}
+			}
+			List<ACLEntry> entries = acl.getEntries();
+			if(entries != null) {
+				for(ACLEntry entry : entries) {
+					String name = entry.getName();
+					if(StringUtil.isNotEmpty(name)) {
+						Element entryElement = xml.createElement("aclentry");
+						entryElement.setAttribute("name", name);
+						if("-Default-".equals(name)) {
+							entryElement.setAttribute("default", "true");
+						}
+						if(entry.getType() != null) {
+							entryElement.setAttribute("type", entry.getType().name());
+						}
+						entryElement.setAttribute("level", entry.getLevel().name());
+						if(!entry.isCreateDocs()) {
+							entryElement.setAttribute("createdocs", "false");
+						}
+						if(entry.isDeleteDocs()) {
+							entryElement.setAttribute("deletedocs", "true");
+						}
+						if(!entry.isCreateLsJavaAgents()) {
+							entryElement.setAttribute("createlsjavaagents", "false");
+						}
+						if(!entry.isCreatePersonalAgents()) {
+							entryElement.setAttribute("createpersonalagents", "false");
+						}
+						if(!entry.isCreatePersonalViews()) {
+							entryElement.setAttribute("createpersonalviews", "false");
+						}
+						if(!entry.isCreateSharedViews()) {
+							entryElement.setAttribute("createsharedviews", "false");
+						}
+						if(!entry.isReadPublicDocs()) {
+							entryElement.setAttribute("readpublicdocs", "false");
+						}
+						if(!entry.isWritePublicDocs()) {
+							entryElement.setAttribute("writepublicdocs", "false");
+						}
+						List<String> entryRoles = entry.getRoles();
+						if(entryRoles != null) {
+							for(String role : entryRoles) {
+								String roleName = HDUtils.getBracketedName(role);
+								if(StringUtil.isNotEmpty(roleName)) {
+									Element roleElement = xml.createElement("role");
+									roleElement.setTextContent(roleName);
+									entryElement.appendChild(roleElement);
+								}
+							}
+						}
+						
+						aclNode.appendChild(entryElement);
+					}
+				}
+			}
+			
+			String resultXml = DOMUtil.getXMLString(xml, false);
+			getLog().debug("Writing result XML of length " + resultXml.length());
+			FileOutputStream fos = new FileOutputStream(databaseProperties);
+			try {
+				IOUtils.write(resultXml, fos);
+			} finally {
+				IOUtils.closeQuietly(fos);
+			}
+			
+		} catch(Throwable ex) {
+			throw new MojoExecutionException("Failed to configure ACL", ex);
 		}
 	}
 

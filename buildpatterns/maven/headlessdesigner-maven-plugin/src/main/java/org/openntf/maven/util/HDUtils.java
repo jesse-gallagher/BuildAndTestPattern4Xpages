@@ -31,4 +31,19 @@ public enum HDUtils {
 		}
 		
 	}
+	
+	/**
+	 * @return the Domino role name in bracketed form, in case it was provided without
+	 */
+	public static String getBracketedName(String name) {
+		if(name == null || name.isEmpty()) {
+			return name;
+		} else {
+			if(name.startsWith("[") && name.endsWith("]")) {
+				return name;
+			} else {
+				return "[" + name + "]";
+			}
+		}
+	}
 }
