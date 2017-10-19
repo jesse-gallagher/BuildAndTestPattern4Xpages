@@ -160,11 +160,17 @@ public class HeadlessDesignerBuilder extends AbstractDesignerPlugin {
 		sbDesignerArgs.append("\"");
 
 		getLog().debug("Designer call = " + sbDesignerArgs.toString());
-		ProcessBuilder pb = new ProcessBuilder(m_DesignerExec, "-RPARAMS", "-console", "-vmargs", sbDesignerArgs.toString());
+		// This uses Runtime instead of ProcessBuilder because the latter doesn't properly launch
+		// Designer on all systems, and a String instead of an array because Designer is quite
+		// finicky about that as well
+		String cmd = m_DesignerExec + " -RPARAMS -console -vmargs " + sbDesignerArgs;
 
 		try {
-			Process process = pb.start();
+			Process process = Runtime.getRuntime().exec(cmd);
 			int result = process.waitFor();
+			if(result != 0) {
+				throw new MojoExecutionException("Designer task ended with non-zero exit code: " + result);
+			}
 			getLog().debug("DDE HeadlessDesigner ended with: " + result);
 			boolean finished = false;
 			int nCounter = 0;
@@ -176,6 +182,8 @@ public class HeadlessDesignerBuilder extends AbstractDesignerPlugin {
 				throw new MojoExecutionException("DDE HeadlessDesignerPlugin not finished in 120 sec timeout");
 
 			}
+		} catch (MojoExecutionException ex) {
+			throw ex;
 		} catch (Exception ex) {
 			throw new MojoExecutionException("DDE HeadlessDesignerPlugin reports an error: ", ex);
 		}
