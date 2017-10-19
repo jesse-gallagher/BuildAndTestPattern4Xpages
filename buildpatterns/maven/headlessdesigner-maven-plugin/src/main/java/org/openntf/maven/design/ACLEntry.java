@@ -5,28 +5,64 @@ import java.util.List;
 import org.apache.maven.plugins.annotations.Parameter;
 
 public class ACLEntry {
+	/**
+	 * A List of roles to apply to this entry
+	 */
 	@Parameter
 	private List<String> roles;
+	/**
+	 * The name of the entry, in canonical format
+	 */
 	@Parameter(required=true)
 	private String name;
+	/**
+	 * The access level for the entry
+	 */
 	@Parameter(required=true)
 	private ACLAccessLevel level;
+	/**
+	 * Whether the entry is allowed to delete documents
+	 */
 	@Parameter(defaultValue="false")
 	private boolean deleteDocs = false;
+	/**
+	 * Whether the entry is allowed to write public documents
+	 */
 	@Parameter(defaultValue="true")
 	private boolean writePublicDocs = true;
+	/**
+	 * Whether the entry is allowed to read public documents
+	 */
 	@Parameter(defaultValue="true")
 	private boolean readPublicDocs = true;
+	/**
+	 * Whether the entry is allowed to create shared agents
+	 */
 	@Parameter(defaultValue="true")
 	private boolean createLsJavaAgents = true;
+	/**
+	 * Whether the entry is allowed to create personal views
+	 */
 	@Parameter(defaultValue="true")
 	private boolean createPersonalViews = true;
+	/**
+	 * Whether the entry is allowed to create personal agents
+	 */
 	@Parameter(defaultValue="true")
 	private boolean createPersonalAgents = true;
+	/**
+	 * Whether the entry is allowed to create shared agents
+	 */
 	@Parameter(defaultValue="true")
 	private boolean createSharedViews = true;
+	/**
+	 * Whether the entry is allowed to create documents
+	 */
 	@Parameter(defaultValue="true")
 	private boolean createDocs = true;
+	/**
+	 * The type of the named entity
+	 */
 	@Parameter
 	private ACLEntryType type;
 	

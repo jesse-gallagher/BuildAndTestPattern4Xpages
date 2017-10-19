@@ -11,14 +11,29 @@ import org.apache.maven.plugins.annotations.Parameter;
  * @since 1.4.0
  */
 public class ACL {
+	/**
+	 * A List of ACL entries to populate the ACL
+	 */
 	@Parameter
 	private List<ACLEntry> entries;
+	/**
+	 * The administration server to specify for the ACL
+	 */
 	@Parameter
 	private String adminServer;
+	/**
+	 * Whether the database should be set to maintain a consistent ACL across replicas
+	 */
 	@Parameter
 	private boolean consistentAcl;
+	/**
+	 * The maximum effective access level for Internet sessions
+	 */
 	@Parameter(defaultValue="editor")
 	private ACLAccessLevel maxInternetAccess = ACLAccessLevel.editor;
+	/**
+	 * A List of roles available in the database
+	 */
 	@Parameter
 	private List<String> roles;
 	

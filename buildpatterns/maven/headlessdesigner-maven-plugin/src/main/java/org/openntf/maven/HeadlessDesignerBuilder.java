@@ -88,6 +88,9 @@ public class HeadlessDesignerBuilder extends AbstractDesignerPlugin {
 	@Parameter(defaultValue="${project}", readonly=true, required=true)
 	private MavenProject project;
 	
+	/**
+	 * The ACL for the generated database. This overrides any ACL present in the ODP.
+	 */
 	@Parameter
 	private ACL acl;
 
