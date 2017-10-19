@@ -230,12 +230,17 @@
 				</plugins>
 			</build>
 		</profile>
+		<profile>
+			<id>nexus-deploy</id>
+			
+			<distributionManagement>
+				<snapshotRepository>
+					<id>sonatype-nexus-staging-openntf</id>
+					<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+				</snapshotRepository>
+			</distributionManagement>
+		</profile>
+		
 	</profiles>
-	<distributionManagement>
-		<snapshotRepository>
-			<id>sonatype-nexus-staging-openntf</id>
-			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
-		</snapshotRepository>
-	</distributionManagement>
 	<description>The headless designer plugins enables you build XPages Application from the On-Disk-Project, invoking the IBM Domino Designer.</description>
 </project>
