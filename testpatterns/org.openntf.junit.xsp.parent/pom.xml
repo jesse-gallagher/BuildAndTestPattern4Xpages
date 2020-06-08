@@ -114,12 +114,12 @@
 							<requirement>
 								<type>eclipse-plugin</type>
 								<id>com.ibm.notes.java.api.win32.linux</id>
-								<versionRange>[9.0.1,9.0.2)</versionRange>
+								<versionRange>9.0.1</versionRange>
 							</requirement>
 							<requirement>
 								<type>eclipse-plugin</type>
 								<id>com.ibm.designer.lib.jsf</id>
-								<versionRange>[9.0.1,9.0.2)</versionRange>
+								<versionRange>9.0.1</versionRange>
 							</requirement>
 
 						</extraRequirements>
@@ -322,18 +322,13 @@
 		</license>
 	</licenses>
 
-	<dependencies>
-		<dependency>
-			<groupId>com.mycila</groupId>
-			<artifactId>license-maven-plugin</artifactId>
-			<version>2.6</version>
-			<type>maven-plugin</type>
-		</dependency>
-		<dependency>
-			<groupId>org.codehaus.plexus</groupId>
-			<artifactId>plexus-utils</artifactId>
-			<version>3.0.15</version>
-		</dependency>
-	</dependencies>
+	<distributionManagement>
+		<repository>
+			<id>artifactory.openntf.org</id>
+			<name>artifactory.openntf.org</name>
+			<url>https://artifactory.openntf.org/openntf</url>
+		</repository>
+	</distributionManagement>
+	
 	<name>JUnit4XPages Plugin</name>
 </project>
